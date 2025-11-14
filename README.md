@@ -1,12 +1,12 @@
 # Genomic Text Curation & Topic Grouping
 
-This project builds a small NLP pipeline on top of 80 rows from the ADVP curated variant table (GRCh38/hg38). It:
+This project builds a small NLP pipeline on top of 80 rows from the ADVP curated variant table. It:
 
 1. Extracts structured information (variants, genes, phenotypes, simple relations) from short text snippets.  
 2. Groups texts into high-level topics using document clustering.  
 3. Produces outputs that a human curator can easily inspect.
 
----
+
 
 ## 1. Setup and How to Run
 
@@ -31,7 +31,7 @@ Running the notebook will:
 - Show a small interactive “curator view”.  
 - Save a sample file for error analysis.
 
----
+
 
 ## 2. Methods Overview
 
@@ -55,19 +55,17 @@ We apply simple regular expressions to each text:
 
 ### 2.3 Curated Entities and Relations
 
-We build a small curated schema for each row. This schema is exported as entities_relations.json.
-Output a JSON file like:
-  json
-  {
-    "text_id": "T0032",
-    "variant": "rs429358",
-    "gene": "APOE",
-    "phenotype": "Alzheimer's disease",
-    "relation": "increases risk of",
-    "evidence_span": "rs429358 in APOE increases Alzheimer's disease risk"
-  }
+We build a small curated schema for each row. 
+- A unique `text_id` (e.g., `T0001`).  
+- `variant` from `Top SNP`.  
+- `gene` from `nearest_gene_symb`, normalized to uppercase.  
+- `phenotype` from `Phenotype`, with a few common abbreviations expanded, such as:
+  - `AD` to “Alzheimer’s disease”  
+  - `ADRD` to “Alzheimer’s disease and related dementias”  
+- `relation` is set to `"associated_with"` for all rows, reflecting that the dataset reports variant–phenotype associations.  
+- `evidence_span` is the combined `text` so a curator can see the original snippet.
 
----
+This schema is exported as `entities_relations.json`
 
 ## 3. Topics and Clustering
 
@@ -88,7 +86,7 @@ With 4 clusters, we:
   - The top keywords (based on the cluster center in TF–IDF space).  
   - Three example texts from that topic.
 
----
+
 
 ## 4. Visualizations
 
@@ -106,7 +104,7 @@ The notebook produces two main plots:
    - One topic is clearly separated along the first component, while the others overlap more.  
    - Some overlap in 2D is expected, because we compress many original dimensions into just two.
 ![2D scatter plot](image-1.png)
----
+
 
 ## 5. Mini “Curator View” (Bonus)
 
@@ -115,10 +113,10 @@ The notebook includes a small interactive view using widgets:
 - You can filter the curated table by:
   - Gene (substring match).  
   - Variant (substring match).  
-  - Topic ID (or “All”).  
+  - Topic ID.  
 - It shows up to 20 matching rows at a time.
 
----
+
 
 ## 6. Error Analysis (Bonus)
 
@@ -131,7 +129,7 @@ We sample 40 rows into 'error_analysis_sample.csv' to inspect how well the regex
 - **False negatives**:
   - Some rows have 'Phenotype' or 'Phenotype-derived' filled but 'disease_phrases' is empty, often because the disease is written as an abbreviation or in a hyphenated phrase (for example, “High-density lipoprotein (HDL …)”) that the simple pattern does not match.
 
----
+
 
 ## 7. Limitations and Future Work
 
